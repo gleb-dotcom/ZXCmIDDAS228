@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * MONOCHROME RAIN ENGINE v2.0 — «ПУСТОТА»
+ * MONOCHROME RAIN ENGINE v2.0 — «zxcMIDDAS»
  * ═══════════════════════════════════════════════════════════════
  * High-fidelity HTML5 Canvas atmospheric rain simulation.
  *
