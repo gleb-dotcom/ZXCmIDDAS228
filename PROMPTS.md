@@ -1,4 +1,4 @@
-# 🖤 ПУСТОТА // VOID STORE v2.0
+# 🖤 zxcMIDDAS // STORE v2.0
 
 > Монохромный интернет-магазин альтернативной одежды. Opium / Grunge / Darkwear / Post-Punk / Goth.
 
