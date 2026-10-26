@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ПУСТОТА // VOID STORE — MONOCHROME NEFOR COUTURE</title>
+  <meta name="description" content="Андеграундный монохромный магазин альтернативной одежды. Opium, Grunge, Darkwear, Post-Punk." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            gothic: ['"Cinzel Decorative"', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['"Syne"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-black text-zinc-100">
+
+  <!-- ═══ RAIN CANVAS ═══ -->
+  <canvas id="rain-canvas"></canvas>
+
+  <!-- ═══ CRT / GRAIN OVERLAY ═══ -->
+  <div class="grain-overlay"></div>
+
+  <!-- ═══ APP SHELL ═══ -->
+  <div class="app-container">
+
+    <!-- ─── ADMIN BANNER (hidden by default) ─── -->
+    <div id="admin-banner" class="hidden bg-zinc-950 border-b border-red-900/50 text-white px-4 py-2 font-mono text-[11px] flex flex-wrap items-center justify-between gap-2 z-40 sticky top-0 shadow-lg">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 bg-red-600 rounded-full pulse-admin"></span>
+        <span class="text-red-400 font-bold uppercase tracking-wider">[ РЕЖИМ АДМИНИСТРАТОРА ]</span>
+        <span class="text-zinc-500 hidden sm:inline">// Добавляйте, редактируйте товары и категории</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-reset-data" class="text-zinc-500 hover:text-white underline text-[10px]">СБРОС К ДЕФОЛТУ</button>
+        <button id="btn-admin-logout" class="px-2 py-1 bg-red-950/80 hover:bg-red-800 border border-red-800 text-white text-[10px] font-bold uppercase transition-colors">ВЫЙТИ</button>
+      </div>
+    </div>
+
+    <!-- ─── HEADER ─── -->
+    <header class="border-b border-zinc-900 bg-black/85 backdrop-blur-lg sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
+        <!-- Logo -->
+        <a href="#" class="group flex-shrink-0">
+          <h1 class="font-gothic text-xl sm:text-2xl tracking-[0.18em] text-white group-hover:opacity-70 transition-opacity">
+            ПУСТОТА
+          </h1>
+          <p class="font-mono text-[8px] tracking-[0.28em] text-zinc-500 uppercase mt-0.5">
+            MONOCHROME NEFOR COUTURE // 00
+          </p>
+        </a>
+
+        <!-- Atmosphere Controls (desktop) -->
+        <div class="hidden lg:flex items-center gap-2 border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 font-mono text-[10px]">
+          <i data-lucide="cloud-rain" class="w-3.5 h-3.5 text-zinc-500"></i>
+          <select id="rain-level" class="bg-transparent text-zinc-300 outline-none cursor-pointer text-[10px]">
+            <option value="calm"  class="bg-black">ТИХИЙ</option>
+            <option value="heavy" class="bg-black" selected>ЛИВЕНЬ</option>
+            <option value="storm" class="bg-black">ШТОРМ</option>
+          </select>
+          <button id="btn-lightning" title="Молния" class="p-0.5 hover:text-white text-zinc-500 transition-colors ml-1">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          </button>
+          <div class="h-3 w-px bg-zinc-800 mx-1"></div>
+          <button id="btn-sound" class="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors">
+            <i data-lucide="volume-x" class="w-3.5 h-3.5"></i>
+            <span class="sound-label">[ OFF ]</span>
+          </button>
+        </div>
+
+        <!-- Right Actions -->
+        <div class="flex items-center gap-2">
+          <!-- Auth / Account Button -->
+          <button id="btn-auth" class="btn-v btn-v-ghost text-[10px] py-1.5 px-2.5 sm:px-3 flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i>
+            <span id="auth-btn-label">ВОЙТИ</span>
+          </button>
+          <!-- Cart -->
+          <button id="btn-open-cart" class="btn-v btn-v-solid text-[11px] py-1.5 px-3 flex items-center gap-1.5">
+            <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+            <span class="font-bold hidden sm:inline">КОРЗИНА</span>
+            <span class="cart-badge bg-black text-white font-mono text-[9px] px-1.5 leading-5">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ─── ADMIN TOOLBAR (hidden by default) ─── -->
+    <div id="admin-toolbar" class="hidden bg-zinc-950/90 border-b border-zinc-800 px-4 py-2.5 sticky top-[53px] z-20 backdrop-blur-md">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="font-mono text-[10px] text-zinc-400 flex items-center gap-1.5">
+          <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-red-500"></i>
+          ПАНЕЛЬ УПРАВЛЕНИЯ:
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-add-product" class="btn-v btn-v-solid text-[10px] py-1 px-2.5 flex items-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> ДОБАВИТЬ ТОВАР
+          </button>
+          <button id="btn-categories" class="btn-v text-[10px] py-1 px-2.5 flex items-center gap-1">
+            <i data-lucide="folder-plus" class="w-3 h-3"></i> КАТЕГОРИИ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MARQUEE TICKER ─── -->
+    <div class="border-b border-zinc-900 bg-black/70 overflow-hidden py-1.5">
+      <div class="marquee-track font-mono text-[9px] tracking-[0.2em] text-zinc-500 uppercase">
+        <span class="mx-8">▪ МОНОХРОМ ONLY ▪ OPIUM / GRUNGE / DARKWEAR ▪ ПРОМОКОД: OPIUM −15% ▪ БЕСПЛАТНАЯ ДОСТАВКА ОТ 15K ▪ РУЧНАЯ ОБРАБОТКА КАЖДОЙ ВЕЩИ ▪ ACID WASH / STONE WASH ▪ ЧЕРНЁНАЯ СТАЛЬ ▪ 480 GSM ФУТЕР ▪ VOID STORE 2026 ▪</span>
+        <span class="mx-8">▪ МОНОХРОМ ONLY ▪ OPIUM / GRUNGE / DARKWEAR ▪ ПРОМОКОД: OPIUM −15% ▪ БЕСПЛАТНАЯ ДОСТАВКА ОТ 15K ▪ РУЧНАЯ ОБРАБОТКА КАЖДОЙ ВЕЩИ ▪ ACID WASH / STONE WASH ▪ ЧЕРНЁНАЯ СТАЛЬ ▪ 480 GSM ФУТЕР ▪ VOID STORE 2026 ▪</span>
+      </div>
+    </div>
+
+    <!-- ─── HERO SECTION ─── -->
+    <section class="relative border-b border-zinc-900 py-10 md:py-14 px-4 overflow-hidden">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end justify-between gap-6 relative z-10">
+        <div>
+          <div class="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.2em] text-zinc-400 uppercase mb-3 border border-zinc-800 px-2.5 py-1 bg-black/60">
+            <span>● ARCHIVE 2026</span>
+            <span class="text-zinc-700">|</span>
+            <span>SUB-CULTURE ATTIRE</span>
+          </div>
+          <h2 class="hero-title text-3xl sm:text-5xl lg:text-[3.6rem] font-black uppercase tracking-tight text-white font-sans max-w-2xl leading-[0.95]">
+            ОДЕЖДА ИЗ ТЕНИ. <br/>
+            <span class="text-zinc-500 font-normal text-[0.65em]">ЭСТЕТИКА РАСПАДА & ПУСТОТЫ.</span>
+          </h2>
+        </div>
+        <div class="font-mono text-[11px] text-zinc-400 max-w-xs border-l border-zinc-800 pl-4 py-1 leading-relaxed hidden md:block">
+          <p>// Чёрное и белое. Тяжёлый футер, рваные швы, чернёная сталь и дождь за окном. Никаких компромиссов.</p>
+          <p class="text-[9px] text-zinc-500 uppercase tracking-widest mt-2">
+            ПРОМОКОДЫ: <strong class="text-white">OPIUM</strong> (−15%) &nbsp; <strong class="text-white">VOID</strong> (−25%)
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+
+      <!-- Category Tabs -->
+      <div class="border-b border-zinc-900 pb-3 mb-6">
+        <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          <!-- JS -->
+        </div>
+      </div>
+
+      <!-- Search, Sort, Count -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-7">
+        <div class="relative flex-1 max-w-md">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="search-input" placeholder="ПОИСК..." class="input-v pl-9 text-[11px]" />
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="count-badge" class="font-mono text-[10px] text-zinc-500 hidden sm:inline">[ 12 ]</span>
+          <div class="flex items-center gap-1.5 border border-zinc-800 bg-zinc-950/80 px-2.5 py-1.5 font-mono text-[10px]">
+            <i data-lucide="arrow-down-up" class="w-3 h-3 text-zinc-500"></i>
+            <select id="sort-select" class="bg-transparent text-zinc-200 outline-none cursor-pointer text-[10px]">
+              <option value="default" class="bg-black">ПО УМОЛЧАНИЮ</option>
+              <option value="price-asc" class="bg-black">ЦЕНА ↑</option>
+              <option value="price-desc" class="bg-black">ЦЕНА ↓</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <!-- JS -->
+      </div>
+    </main>
+
+    <!-- ─── FOOTER ─── -->
+    <footer class="border-t border-zinc-900 bg-black/90 py-10 px-4 mt-16 font-mono text-[11px] text-zinc-500">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="font-gothic text-base text-white tracking-wider">ПУСТОТА // VOID STORE</div>
+          <p class="text-[9px] text-zinc-600 mt-1">// ЧЁРНО-БЕЛЫЙ АНДЕГРАУНД. OPIUM, GRUNGE, ГОТИКА, DARKWEAR.</p>
+        </div>
+        <div class="flex flex-wrap gap-5 text-[10px]">
+          <span>© 2026 VOID ATTIRE</span>
+          <span>• ДЛЯ НЕФОРОВ И СТРАННИКОВ</span>
+          <span>• СДЕЛАНО В ПОЛНОЙ ТЕМНОТЕ</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       CART DRAWER
+       ═══════════════════════════════════════════ -->
+  <div id="cart-backdrop" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden"></div>
+  <aside id="cart-drawer" class="cart-drawer fixed top-0 right-0 h-full w-full max-w-md bg-black border-l border-zinc-800 z-50 flex flex-col shadow-2xl">
+    <div class="p-4 border-b border-zinc-900 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shopping-bag" class="w-4 h-4 text-white"></i>
+        <h3 class="font-mono text-xs uppercase text-white font-bold tracking-widest">// КОРЗИНА</h3>
+      </div>
+      <button id="btn-close-cart" class="p-1 text-zinc-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-2.5"></div>
+    <div class="p-4 border-t border-zinc-900 bg-zinc-950/80 space-y-2.5 font-mono">
+      <div class="flex gap-2">
+        <input type="text" id="promo-input" placeholder="ПРОМОКОД" class="input-v text-[10px] py-1.5 uppercase" />
+        <button onclick="applyPromo()" class="btn-v text-[10px] py-1.5 px-2.5">ОК</button>
+      </div>
+      <div class="space-y-1 pt-1.5 text-[11px]">
+        <div class="flex justify-between text-zinc-400"><span>СУММА:</span><span id="cart-sub" class="text-white">0 ₽</span></div>
+        <div id="cart-disc-row" class="flex justify-between text-zinc-300 hidden"><span>СКИДКА:</span><span id="cart-disc" class="text-white font-bold">0 ₽</span></div>
+        <div class="flex justify-between text-sm font-bold text-white pt-1.5 border-t border-zinc-900"><span>ИТОГО:</span><span id="cart-total" class="text-base">0 ₽</span></div>
+      </div>
+      <button id="btn-checkout" class="btn-v btn-v-solid w-full py-2.5 text-[11px] tracking-widest mt-1.5">ОФОРМИТЬ ЗАКАЗ</button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: PRODUCT QUICK VIEW
+       ═══════════════════════════════════════════ -->
+  <div id="modal-product" class="fixed inset-0 overlay-blur z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-black border border-zinc-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative p-5 shadow-2xl">
+      <button onclick="closeModal('modal-product')" class="absolute top-3 right-3 text-zinc-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <div id="modal-product-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: AUTH (LOGIN & REGISTER)
+       ═══════════════════════════════════════════ -->
+  <div id="modal-auth" class="fixed inset-0 overlay-blur z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-black border border-zinc-800 max-w-md w-full p-6 relative font-mono shadow-2xl">
+      <button id="close-auth" class="absolute top-4 right-4 text-zinc-500 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-zinc-800 mb-5">
+        <button id="tab-login" class="flex-1 py-2 text-xs uppercase font-bold tracking-wider border-b-2 border-white text-white transition-colors">
+          [ 1. ВХОД ]
+        </button>
+        <button id="tab-register" class="flex-1 py-2 text-xs uppercase tracking-wider border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition-colors">
+          [ 2. РЕГИСТРАЦИЯ ]
+        </button>
+      </div>
+
+      <!-- Login Form View -->
+      <div id="auth-login-view">
+        <h3 class="text-xs uppercase text-zinc-400 mb-4">// ВХОД В ЛИЧНЫЙ КАБИНЕТ</h3>
+        <form id="form-login" class="space-y-3">
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Логин или Email:</label>
+            <input type="text" id="login-identifier" required placeholder="GOTH_ANGEL или angel@void.cult" class="input-v text-xs py-2" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Пароль:</label>
+            <input type="password" id="login-pass" required placeholder="••••••••" class="input-v text-xs py-2" />
+          </div>
+          <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-xs tracking-widest mt-2">
+            ВОЙТИ В ПУСТОТУ
+          </button>
+        </form>
+
+        <!-- Demo Accounts helper -->
+        <div class="mt-5 pt-4 border-t border-zinc-900">
+          <span class="text-[9px] uppercase tracking-wider text-zinc-600 block mb-2">// БЫСТРЫЙ ДЕМО-ВХОД:</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btn-quick-admin" class="p-2 border border-red-950/70 hover:border-red-600 bg-red-950/20 text-red-300 hover:text-white text-[10px] text-left transition-colors">
+              <span class="font-bold block">● АДМИНИСТРАТОР</span>
+              <span class="text-[9px] text-zinc-500">логин: admin (пароль: nefor)</span>
+            </button>
+            <button type="button" id="btn-quick-customer" class="p-2 border border-zinc-800 hover:border-zinc-500 bg-zinc-950 text-zinc-300 hover:text-white text-[10px] text-left transition-colors">
+              <span class="font-bold block">● ПОКУПАТЕЛЬ</span>
+              <span class="text-[9px] text-zinc-500">GOTH_ANGEL (пароль: 123)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Register Form View -->
+      <div id="auth-register-view" class="hidden">
+        <h3 class="text-xs uppercase text-zinc-400 mb-4">// СОЗДАНИЕ НОВОГО АККАУНТА</h3>
+        <form id="form-register" class="space-y-3">
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Псевдоним / Никнейм:</label>
+            <input type="text" id="reg-username" required placeholder="Например: OPIUM_LORD" class="input-v text-xs py-2" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Электронная почта (Email):</label>
+            <input type="email" id="reg-email" required placeholder="you@domain.com" class="input-v text-xs py-2" />
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Придумайте пароль:</label>
+            <input type="password" id="reg-pass" required minlength="3" placeholder="••••••••" class="input-v text-xs py-2" />
+          </div>
+          <div class="border border-zinc-900 bg-zinc-950/70 p-2.5">
+            <label class="block text-[10px] uppercase text-zinc-300 mb-1">Инвайт-код Администратора (необязательно):</label>
+            <input type="password" id="reg-admin-code" placeholder="Введите 'nefor' или '666' для прав админа" class="input-v text-xs py-1.5" />
+            <span class="text-[9px] text-zinc-500 block mt-1">Оставьте пустым для создания обычного профиля покупателя.</span>
+          </div>
+          <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-xs tracking-widest mt-2">
+            ЗАРЕГИСТРИРОВАТЬСЯ
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: USER PROFILE & ORDER HISTORY
+       ═══════════════════════════════════════════ -->
+  <div id="modal-profile" class="fixed inset-0 overlay-blur z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-black border border-zinc-800 max-w-lg w-full max-h-[92vh] overflow-y-auto p-6 relative font-mono shadow-2xl">
+      <button id="close-profile" class="absolute top-4 right-4 text-zinc-500 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Profile Header -->
+      <div class="flex items-start justify-between border-b border-zinc-800 pb-5 mb-5">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 border border-zinc-700 bg-zinc-950 flex items-center justify-center text-xl" id="profile-avatar">
+            ☠
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-white uppercase tracking-wider" id="profile-username">GOTH_ANGEL</h2>
+              <span id="profile-role-badge" class="tag-v text-[9px]">ПОКУПАТЕЛЬ</span>
+            </div>
+            <p class="text-[11px] text-zinc-500 mt-0.5" id="profile-email">angel@void.cult</p>
+            <p class="text-[9px] text-zinc-600 mt-1 uppercase" id="profile-reg-date">В культе с: 25.10.2026</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order History Section -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-xs uppercase text-zinc-300 font-bold tracking-wider">// ИСТОРИЯ ЗАКАЗОВ В БЕЗДНЕ</h4>
+          <span class="text-[10px] text-zinc-500" id="profile-orders-count">[ 0 заказов ]</span>
+        </div>
+        <div id="profile-orders-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="pt-4 border-t border-zinc-900 flex flex-wrap items-center justify-between gap-3">
+        <div id="profile-admin-shortcuts" class="hidden">
+          <button id="btn-profile-admin-add" class="btn-v text-[10px] py-1.5 px-3">
+            + ДОБАВИТЬ ТОВАР
+          </button>
+        </div>
+        <button id="btn-logout" class="btn-v btn-v-danger text-[10px] py-1.5 px-4 ml-auto">
+          ВЫЙТИ ИЗ АККАУНТА
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: PRODUCT EDITOR (ADMIN)
+       ═══════════════════════════════════════════ -->
+  <div id="modal-editor" class="fixed inset-0 overlay-blur z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-black border border-zinc-800 max-w-xl w-full max-h-[92vh] overflow-y-auto p-5 relative font-mono shadow-2xl">
+      <button id="close-editor" class="absolute top-3 right-3 text-zinc-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 id="editor-heading" class="text-sm text-white font-bold uppercase tracking-wider mb-4">// НОВЫЙ ТОВАР</h3>
+
+      <form id="editor-form" class="space-y-3">
+        <input type="hidden" id="ed-id" />
+
+        <div>
+          <label class="block text-[10px] uppercase text-zinc-400 mb-0.5">Название:</label>
+          <input type="text" id="ed-title" required placeholder="RIPPED SPIDER HOODIE" class="input-v text-[11px]" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-0.5">Категория:</label>
+            <select id="ed-category" class="input-v text-[11px]"></select>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase text-zinc-400 mb-0.5">Цена (₽):</label>
+            <input type="number" id="ed-price" required min="100" placeholder="5900" class="input-v text-[11px]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase text-zinc-400 mb-0.5">Бейдж:</label>
+          <input type="text" id="ed-badge" placeholder="NEW DROP / LIMITED / EXCLUSIVE" class="input-v text-[11px]" />
+        </div>
+
+        <!-- Image Section -->
+        <div class="border border-zinc-800 p-3 bg-zinc-950/60 space-y-2">
+          <label class="block text-[10px] uppercase text-zinc-300 font-bold">Изображение:</label>
+          <div>
+            <span class="text-[9px] text-zinc-500 block mb-0.5">Пресет:</span>
+            <select id="preset-img" class="input-v text-[10px] py-1"></select>
+          </div>
+          <div>
+            <span class="text-[9px] text-zinc-500 block mb-0.5">Или загрузить файл:</span>
+            <input type="file" id="ed-file" accept="image/*" class="text-[10px] text-zinc-400 file:mr-2 file:py-0.5 file:px-2 file:border file:border-zinc-700 file:text-[10px] file:bg-black file:text-white cursor-pointer" />
+          </div>
+          <div>
+            <span class="text-[9px] text-zinc-500 block mb-0.5">Или URL:</span>
+            <input type="url" id="ed-image" placeholder="https://..." class="input-v text-[10px] py-1" />
+          </div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[9px] text-zinc-500">Превью:</span>
+            <img id="ed-preview" src="" class="w-10 h-12 object-cover border border-zinc-700 img-v" />
+          </div>
+        </div>
+
+        <!-- Sizes -->
+        <div>
+          <label class="block text-[10px] uppercase text-zinc-400 mb-1">Размеры:</label>
+          <div class="flex flex-wrap gap-1.5 text-[10px]">
+            <label class="flex items-center gap-1 border border-zinc-800 px-2 py-0.5 bg-zinc-950 cursor-pointer"><input type="checkbox" name="ed-size" value="OVERSZ" checked /> OVERSZ</label>
+            <label class="flex items-center gap-1 border border-zinc-800 px-2 py-0.5 bg-zinc-950 cursor-pointer"><input type="checkbox" name="ed-size" value="S" /> S</label>
+            <label class="flex items-center gap-1 border border-zinc-800 px-2 py-0.5 bg-zinc-950 cursor-pointer"><input type="checkbox" name="ed-size" value="M" /> M</label>
+            <label class="flex items-center gap-1 border border-zinc-800 px-2 py-0.5 bg-zinc-950 cursor-pointer"><input type="checkbox" name="ed-size" value="L" checked /> L</label>
+            <label class="flex items-center gap-1 border border-zinc-800 px-2 py-0.5 bg-zinc-950 cursor-pointer"><input type="checkbox" name="ed-size" value="XL" /> XL</label>
+            <label class="flex items-center gap-1 border border-zinc-800 px-2 py-0.5 bg-zinc-950 cursor-pointer"><input type="checkbox" name="ed-size" value="ONE SIZE" /> ONE SIZE</label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase text-zinc-400 mb-0.5">Описание:</label>
+          <textarea id="ed-desc" rows="3" placeholder="Плотность, ткань, крой..." class="input-v text-[11px]"></textarea>
+        </div>
+
+        <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-[11px]">СОХРАНИТЬ</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: CATEGORY MANAGER (ADMIN)
+       ═══════════════════════════════════════════ -->
+  <div id="modal-cats" class="fixed inset-0 overlay-blur z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-black border border-zinc-800 max-w-md w-full p-5 relative font-mono shadow-2xl">
+      <button id="close-cats" class="absolute top-3 right-3 text-zinc-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-sm text-white font-bold uppercase tracking-wider mb-1.5">// КАТЕГОРИИ</h3>
+      <p class="text-[10px] text-zinc-400 mb-3">Создавайте новые разделы или удаляйте существующие.</p>
+      <form id="cat-form" class="flex gap-2 mb-3">
+        <input type="text" id="cat-input" required placeholder="НОВАЯ КАТЕГОРИЯ..." class="input-v text-[11px] py-1.5 uppercase" />
+        <button type="submit" class="btn-v btn-v-solid text-[10px] py-1.5 px-2.5">ДОБАВИТЬ</button>
+      </form>
+      <div class="border border-zinc-800 p-1.5 max-h-56 overflow-y-auto space-y-1.5" id="cat-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: CHECKOUT
+       ═══════════════════════════════════════════ -->
+  <div id="modal-checkout" class="fixed inset-0 overlay-blur z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-black border border-zinc-800 max-w-md w-full p-5 relative font-mono shadow-2xl">
+      <button id="close-checkout" class="absolute top-3 right-3 text-zinc-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-sm text-white font-bold uppercase tracking-wider mb-1">// ОФОРМЛЕНИЕ ЗАКАЗА</h3>
+      <p id="checkout-summary" class="text-[10px] text-zinc-400 mb-3 border-b border-zinc-800 pb-2"></p>
+      <div id="checkout-content"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script src="rain.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
