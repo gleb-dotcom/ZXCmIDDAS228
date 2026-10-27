@@ -167,7 +167,7 @@ const DEFAULT_USERS = [
     id: 'u_admin',
     username: 'avice',
     email: 'avice@zxcmiddas.store',
-    password: '666',
+    password: '666666',
     role: 'admin',
     registeredAt: '01.01.2026',
     avatar: '⛧',
@@ -178,7 +178,7 @@ const DEFAULT_USERS = [
     id: 'u_customer',
     username: 'GOTH_ANGEL',
     email: 'angel@void.cult',
-    password: '123',
+    password: '123456',
     role: 'customer',
     registeredAt: '14.02.2026',
     avatar: '💀',
@@ -203,19 +203,19 @@ class Store {
   constructor() {
     this.users          = JSON.parse(localStorage.getItem('v_users')) || [...DEFAULT_USERS];
 
-    // Ensure 'avice' is always present and updated as admin with password '666'
+    // Ensure 'avice' is always present and updated as admin with password '666666'
     let adminUser = this.users.find(u => u.username.toLowerCase() === 'avice' || u.id === 'u_admin' || u.username.toLowerCase() === 'admin');
     if (adminUser) {
       adminUser.username = 'avice';
       adminUser.email = adminUser.email || 'avice@zxcmiddas.store';
-      adminUser.password = '666';
+      adminUser.password = '666666';
       adminUser.role = 'admin';
     } else {
       this.users.unshift({
         id: 'u_admin',
         username: 'avice',
         email: 'avice@zxcmiddas.store',
-        password: '666',
+        password: '666666',
         role: 'admin',
         registeredAt: '01.01.2026',
         avatar: '⛧',
@@ -224,10 +224,16 @@ class Store {
       });
     }
 
+    // Ensure GOTH_ANGEL demo password complies with 6+ characters
+    let customerUser = this.users.find(u => u.username.toLowerCase() === 'goth_angel');
+    if (customerUser && (customerUser.password === '123' || customerUser.password === '123456')) {
+      customerUser.password = '123456';
+    }
+
     this.currentUser    = JSON.parse(localStorage.getItem('v_current_user')) || null;
     if (this.currentUser && (this.currentUser.id === 'u_admin' || this.currentUser.username.toLowerCase() === 'admin' || this.currentUser.username.toLowerCase() === 'avice')) {
       this.currentUser.username = 'avice';
-      this.currentUser.password = '666';
+      this.currentUser.password = '666666';
       this.currentUser.role = 'admin';
     }
 
@@ -283,11 +289,12 @@ class Store {
     const uTrim = username.trim();
     const eTrim = email.trim().toLowerCase();
     if (!uTrim || !eTrim || !password) return { ok: false, msg: 'Заполните все обязательные поля!' };
+    if (password.length < 6) return { ok: false, msg: 'Пароль должен состоять из 6 или более символов!' };
 
     const exist = this.users.find(u => u.username.toLowerCase() === uTrim.toLowerCase() || u.email.toLowerCase() === eTrim);
     if (exist) return { ok: false, msg: 'Пользователь с таким ником или email уже существует!' };
 
-    const isAdmin = ['nefor', '666', 'void666'].includes(adminKey.trim().toLowerCase());
+    const isAdmin = ['666666', '666', 'nefor', 'void666'].includes(adminKey.trim().toLowerCase());
     const newUser = {
       id: 'u_' + Date.now(),
       username: uTrim,
@@ -317,9 +324,13 @@ class Store {
     const idClean = identifier.trim().toLowerCase();
     const passClean = password.trim();
 
+    if (passClean.length < 6) {
+      return { ok: false, msg: 'Пароль должен содержать не менее 6 символов!' };
+    }
+
     const user = this.users.find(u =>
       (u.username.toLowerCase() === idClean || u.email.toLowerCase() === idClean) &&
-      (u.password === passClean || (idClean === 'avice' && passClean === '666') || (u.role === 'admin' && (passClean === '666' || passClean === 'nefor')))
+      (u.password === passClean || (idClean === 'avice' && passClean === '666666') || (u.role === 'admin' && passClean === '666666'))
     );
 
     if (user) {
@@ -335,7 +346,7 @@ class Store {
       this._emit('v:cart');
       return { ok: true, user };
     }
-    return { ok: false, msg: 'Неверный логин или пароль! (Подсказка: "avice" / "666")' };
+    return { ok: false, msg: 'Неверный логин или пароль! (Подсказка: "avice" / "666666")' };
   }
 
   logout() {
@@ -956,7 +967,7 @@ function setupAuthModals() {
 
   // Quick Demo logins
   document.getElementById('btn-quick-admin')?.addEventListener('click', () => {
-    const res = S.login('avice', '666');
+    const res = S.login('avice', '666666');
     if (res.ok) {
       modalAuth?.classList.add('hidden');
       toast(`ВОШЛИ КАК АДМИНИСТРАТОР: ${res.user.username}`, true);
@@ -965,7 +976,7 @@ function setupAuthModals() {
   });
 
   document.getElementById('btn-quick-customer')?.addEventListener('click', () => {
-    const res = S.login('GOTH_ANGEL', '123');
+    const res = S.login('GOTH_ANGEL', '123456');
     if (res.ok) {
       modalAuth?.classList.add('hidden');
       toast(`ВОШЛИ КАК ПОКУПАТЕЛЬ: ${res.user.username}`, true);
