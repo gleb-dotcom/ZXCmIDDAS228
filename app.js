@@ -171,7 +171,8 @@ const DEFAULT_USERS = [
     role: 'admin',
     registeredAt: '01.01.2026',
     avatar: '⛧',
-    orders: []
+    orders: [],
+    cart: []
   },
   {
     id: 'u_customer',
@@ -189,7 +190,8 @@ const DEFAULT_USERS = [
         total: 6400,
         status: 'ДОСТАВЛЕНО // ARCHIVE'
       }
-    ]
+    ],
+    cart: []
   }
 ];
 
@@ -204,7 +206,7 @@ class Store {
     this.role           = this.currentUser ? this.currentUser.role : (localStorage.getItem('v_role') || 'customer');
     this.categories     = JSON.parse(localStorage.getItem('v_cats'))  || [...DEFAULT_CATEGORIES];
     this.products       = JSON.parse(localStorage.getItem('v_prods')) || [...DEFAULT_PRODUCTS];
-    this.cart           = JSON.parse(localStorage.getItem('v_cart'))   || [];
+    this.cart           = this._loadCurrentCart();
     this.activeCategory = 'ВСЕ ВЕЩИ';
     this.searchQuery    = '';
     this.sortBy         = 'default';
@@ -212,13 +214,39 @@ class Store {
     this.promoCode      = '';
   }
 
+  _loadCurrentCart() {
+    if (this.currentUser) {
+      const u = this.users.find(x => x.id === this.currentUser.id);
+      if (u && Array.isArray(u.cart)) {
+        return u.cart;
+      }
+      const savedUserCart = JSON.parse(localStorage.getItem('v_cart_user_' + this.currentUser.id));
+      if (Array.isArray(savedUserCart)) return savedUserCart;
+      return [];
+    }
+    return JSON.parse(localStorage.getItem('v_cart_guest')) || [];
+  }
+
   _save() {
     localStorage.setItem('v_role',  this.role);
-    localStorage.setItem('v_users', JSON.stringify(this.users));
     localStorage.setItem('v_current_user', JSON.stringify(this.currentUser));
     localStorage.setItem('v_cats',  JSON.stringify(this.categories));
     localStorage.setItem('v_prods', JSON.stringify(this.products));
-    localStorage.setItem('v_cart',  JSON.stringify(this.cart));
+
+    // Save cart strictly to current user or guest
+    if (this.currentUser) {
+      this.currentUser.cart = this.cart;
+      const idx = this.users.findIndex(u => u.id === this.currentUser.id);
+      if (idx !== -1) {
+        this.users[idx].cart = this.cart;
+      }
+      localStorage.setItem('v_users', JSON.stringify(this.users));
+      localStorage.setItem('v_cart_user_' + this.currentUser.id, JSON.stringify(this.cart));
+    } else {
+      localStorage.setItem('v_users', JSON.stringify(this.users));
+      localStorage.setItem('v_cart_guest', JSON.stringify(this.cart));
+    }
+    localStorage.removeItem('v_cart');
   }
   _emit(name) { window.dispatchEvent(new CustomEvent(name)); }
 
@@ -240,15 +268,20 @@ class Store {
       role: isAdmin ? 'admin' : 'customer',
       registeredAt: new Date().toLocaleDateString('ru-RU'),
       avatar: isAdmin ? '⛧' : '💀',
-      orders: []
+      orders: [],
+      cart: []
     };
 
     this.users.push(newUser);
     this.currentUser = newUser;
     this.role = newUser.role;
+    this.cart = [];
+    this.discount = 0;
+    this.promoCode = '';
     this._save();
     this._emit('v:auth');
     this._emit('v:role');
+    this._emit('v:cart');
     return { ok: true, user: newUser };
   }
 
@@ -264,20 +297,37 @@ class Store {
     if (user) {
       this.currentUser = user;
       this.role = user.role;
+      // Load ONLY this user's cart
+      this.cart = this._loadCurrentCart();
+      this.discount = 0;
+      this.promoCode = '';
       this._save();
       this._emit('v:auth');
       this._emit('v:role');
+      this._emit('v:cart');
       return { ok: true, user };
     }
     return { ok: false, msg: 'Неверный логин или пароль! (Подсказка: "admin" / "nefor")' };
   }
 
   logout() {
+    // Save current user's cart before logging out
+    if (this.currentUser) {
+      this.currentUser.cart = this.cart;
+      const idx = this.users.findIndex(u => u.id === this.currentUser.id);
+      if (idx !== -1) this.users[idx].cart = this.cart;
+      localStorage.setItem('v_cart_user_' + this.currentUser.id, JSON.stringify(this.cart));
+    }
     this.currentUser = null;
     this.role = 'customer';
+    // Switch to isolated guest cart
+    this.cart = JSON.parse(localStorage.getItem('v_cart_guest')) || [];
+    this.discount = 0;
+    this.promoCode = '';
     this._save();
     this._emit('v:auth');
     this._emit('v:role');
+    this._emit('v:cart');
   }
 
   addOrder(order) {
@@ -310,7 +360,17 @@ class Store {
   deleteProduct(id) {
     this.products = this.products.filter(p => p.id !== id);
     this.cart = this.cart.filter(c => c.pid !== id);
-    this._save(); this._emit('v:data');
+    this.users.forEach(u => {
+      if (Array.isArray(u.cart)) {
+        u.cart = u.cart.filter(c => c.pid !== id);
+        localStorage.setItem('v_cart_user_' + u.id, JSON.stringify(u.cart));
+      }
+    });
+    const guestCart = JSON.parse(localStorage.getItem('v_cart_guest')) || [];
+    localStorage.setItem('v_cart_guest', JSON.stringify(guestCart.filter(c => c.pid !== id)));
+    this._save();
+    this._emit('v:data');
+    this._emit('v:cart');
   }
   addCategory(name) {
     const n = name.trim().toUpperCase();
@@ -674,13 +734,18 @@ function updateCartBadge() {
 
 // ── Cart Drawer ──
 function renderCartDrawer() {
-  const list     = document.getElementById('cart-list');
-  const subEl    = document.getElementById('cart-sub');
-  const discRow  = document.getElementById('cart-disc-row');
-  const discEl   = document.getElementById('cart-disc');
-  const totalEl  = document.getElementById('cart-total');
-  const chkBtn   = document.getElementById('btn-checkout');
+  const list      = document.getElementById('cart-list');
+  const subEl     = document.getElementById('cart-sub');
+  const discRow   = document.getElementById('cart-disc-row');
+  const discEl    = document.getElementById('cart-disc');
+  const totalEl   = document.getElementById('cart-total');
+  const chkBtn    = document.getElementById('btn-checkout');
+  const userLabel = document.getElementById('cart-user-label');
   if (!list) return;
+
+  if (userLabel) {
+    userLabel.textContent = S.currentUser ? `[ ${S.currentUser.username} ]` : `[ ГОСТЬ ]`;
+  }
 
   const { sub, disc, total, count } = S.cartTotals();
 
