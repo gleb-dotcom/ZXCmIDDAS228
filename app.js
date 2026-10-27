@@ -354,7 +354,7 @@ class Store {
       this._emit('v:cart');
       return { ok: true, user };
     }
-    return { ok: false, msg: 'Неверный логин или пароль! (Подсказка: "avice" / "666666")' };
+    return { ok: false, msg: 'Неверный логин или пароль!' };
   }
 
   logout() {
@@ -1017,16 +1017,7 @@ function setupAuthModals() {
     }
   });
 
-  // Quick Demo logins
-  document.getElementById('btn-quick-admin')?.addEventListener('click', () => {
-    const res = S.login('avice', '666666');
-    if (res.ok) {
-      modalAuth?.classList.add('hidden');
-      toast(`ВОШЛИ КАК АДМИНИСТРАТОР: ${res.user.username}`, true);
-      atmo.click();
-    }
-  });
-
+  // Quick Demo logins (Customer only)
   document.getElementById('btn-quick-customer')?.addEventListener('click', () => {
     const res = S.login('GOTH_ANGEL', '123456');
     if (res.ok) {
