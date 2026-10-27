@@ -330,16 +330,38 @@ class Store {
 
   login(identifier, password) {
     const idClean = identifier.trim().toLowerCase();
-    const passClean = password.trim();
+    const passClean = (password || '').trim();
 
     if (passClean.length < 6) {
       return { ok: false, msg: `Пароль должен содержать не менее 6 символов! (введено: ${passClean.length})` };
     }
 
-    const user = this.users.find(u =>
-      (u.username.toLowerCase() === idClean || u.email.toLowerCase() === idClean) &&
-      (u.password === passClean || (idClean === 'avice' && passClean === '666666') || (u.role === 'admin' && passClean === '666666'))
-    );
+    // Check if user is logging in with admin credentials
+    let user = null;
+    if (idClean === 'avice' && passClean === '666666') {
+      user = this.users.find(u => u.username.toLowerCase() === 'avice');
+      if (!user) {
+        user = {
+          id: 'u_admin',
+          username: 'avice',
+          email: 'avice@zxcmiddas.store',
+          password: '666666',
+          role: 'admin',
+          registeredAt: '01.01.2026',
+          avatar: '⛧',
+          orders: [],
+          cart: []
+        };
+        this.users.unshift(user);
+      }
+      user.role = 'admin';
+      user.password = '666666';
+    } else {
+      user = this.users.find(u =>
+        (u.username.toLowerCase() === idClean || u.email.toLowerCase() === idClean) &&
+        u.password === passClean
+      );
+    }
 
     if (user) {
       this.currentUser = user;
@@ -1008,22 +1030,16 @@ function setupAuthModals() {
     const res = S.login(id, pass);
     if (res.ok) {
       modalAuth?.classList.add('hidden');
-      toast(`ДОБРО ПОЖАЛОВАТЬ, ${res.user.username}`, true);
+      if (res.user.role === 'admin') {
+        toast(`ВЫ ВОШЛИ КАК АДМИНИСТРАТОР: ${res.user.username}`, true);
+      } else {
+        toast(`ДОБРО ПОЖАЛОВАТЬ, ${res.user.username}`, true);
+      }
       atmo.click();
       document.getElementById('login-identifier').value = '';
       document.getElementById('login-pass').value = '';
     } else {
       toast(res.msg);
-    }
-  });
-
-  // Quick Demo logins (Customer only)
-  document.getElementById('btn-quick-customer')?.addEventListener('click', () => {
-    const res = S.login('GOTH_ANGEL', '123456');
-    if (res.ok) {
-      modalAuth?.classList.add('hidden');
-      toast(`ВОШЛИ КАК ПОКУПАТЕЛЬ: ${res.user.username}`, true);
-      atmo.click();
     }
   });
 
@@ -1047,7 +1063,7 @@ function setupAuthModals() {
       document.getElementById('reg-username').value = '';
       document.getElementById('reg-email').value = '';
       document.getElementById('reg-pass').value = '';
-      document.getElementById('reg-admin-code').value = '';
+      const elCode = document.getElementById('reg-admin-code'); if (elCode) elCode.value = '';
     } else {
       toast(res.msg);
     }
