@@ -203,14 +203,20 @@ class Store {
   constructor() {
     this.users          = JSON.parse(localStorage.getItem('v_users')) || [...DEFAULT_USERS];
 
-    // Ensure 'avice' is always present and updated as admin with password '666666'
-    let adminUser = this.users.find(u => u.username.toLowerCase() === 'avice' || u.id === 'u_admin' || u.username.toLowerCase() === 'admin');
-    if (adminUser) {
-      adminUser.username = 'avice';
-      adminUser.email = adminUser.email || 'avice@zxcmiddas.store';
-      adminUser.password = '666666';
-      adminUser.role = 'admin';
-    } else {
+    // Sanitize and enforce min 6 chars for all users in localStorage
+    this.users.forEach(u => {
+      if (u.username.toLowerCase() === 'avice' || u.id === 'u_admin' || u.role === 'admin') {
+        u.username = 'avice';
+        u.password = '666666';
+        u.role = 'admin';
+      } else if (u.password && u.password.length < 6) {
+        if (u.password === '123' || u.username.toLowerCase() === 'goth_angel') u.password = '123456';
+        else u.password = u.password.padEnd(6, '0');
+      }
+    });
+
+    let adminUser = this.users.find(u => u.username.toLowerCase() === 'avice');
+    if (!adminUser) {
       this.users.unshift({
         id: 'u_admin',
         username: 'avice',
@@ -224,18 +230,19 @@ class Store {
       });
     }
 
-    // Ensure GOTH_ANGEL demo password complies with 6+ characters
-    let customerUser = this.users.find(u => u.username.toLowerCase() === 'goth_angel');
-    if (customerUser && (customerUser.password === '123' || customerUser.password === '123456')) {
-      customerUser.password = '123456';
-    }
-
     this.currentUser    = JSON.parse(localStorage.getItem('v_current_user')) || null;
-    if (this.currentUser && (this.currentUser.id === 'u_admin' || this.currentUser.username.toLowerCase() === 'admin' || this.currentUser.username.toLowerCase() === 'avice')) {
-      this.currentUser.username = 'avice';
-      this.currentUser.password = '666666';
-      this.currentUser.role = 'admin';
+    if (this.currentUser) {
+      if (this.currentUser.id === 'u_admin' || this.currentUser.username.toLowerCase() === 'admin' || this.currentUser.username.toLowerCase() === 'avice') {
+        this.currentUser.username = 'avice';
+        this.currentUser.password = '666666';
+        this.currentUser.role = 'admin';
+      } else if (this.currentUser.password && this.currentUser.password.length < 6) {
+        if (this.currentUser.password === '123' || this.currentUser.username.toLowerCase() === 'goth_angel') this.currentUser.password = '123456';
+        else this.currentUser.password = this.currentUser.password.padEnd(6, '0');
+      }
     }
+    localStorage.setItem('v_users', JSON.stringify(this.users));
+    if (this.currentUser) localStorage.setItem('v_current_user', JSON.stringify(this.currentUser));
 
     this.role           = this.currentUser ? this.currentUser.role : (localStorage.getItem('v_role') || 'customer');
     this.categories     = JSON.parse(localStorage.getItem('v_cats'))  || [...DEFAULT_CATEGORIES];
@@ -289,7 +296,8 @@ class Store {
     const uTrim = username.trim();
     const eTrim = email.trim().toLowerCase();
     if (!uTrim || !eTrim || !password) return { ok: false, msg: 'Заполните все обязательные поля!' };
-    if (password.length < 6) return { ok: false, msg: 'Пароль должен состоять из 6 или более символов!' };
+    const pTrim = (password || '').trim();
+    if (pTrim.length < 6) return { ok: false, msg: `Пароль должен содержать от 6 символов и более! (сейчас: ${pTrim.length})` };
 
     const exist = this.users.find(u => u.username.toLowerCase() === uTrim.toLowerCase() || u.email.toLowerCase() === eTrim);
     if (exist) return { ok: false, msg: 'Пользователь с таким ником или email уже существует!' };
@@ -325,7 +333,7 @@ class Store {
     const passClean = password.trim();
 
     if (passClean.length < 6) {
-      return { ok: false, msg: 'Пароль должен содержать не менее 6 символов!' };
+      return { ok: false, msg: `Пароль должен содержать не менее 6 символов! (введено: ${passClean.length})` };
     }
 
     const user = this.users.find(u =>
@@ -948,11 +956,55 @@ function setupAuthModals() {
   closeAuth?.addEventListener('click', () => modalAuth?.classList.add('hidden'));
   closeProfile?.addEventListener('click', () => modalProfile?.classList.add('hidden'));
 
+  // Live password length validator helper
+  const setupPassValidation = (inputId, counterId, msgId) => {
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    const msg = document.getElementById(msgId);
+    if (!input || !counter) return;
+
+    input.addEventListener('input', () => {
+      const len = input.value.trim().length;
+      counter.textContent = `[ ${len} / 6+ ]`;
+      if (len === 0) {
+        counter.className = 'text-[9px] text-zinc-500 font-mono';
+        input.classList.remove('border-red-600', 'border-emerald-600');
+        if (msg) msg.classList.add('hidden');
+      } else if (len < 6) {
+        counter.className = 'text-[9px] text-red-500 font-mono font-bold';
+        input.classList.add('border-red-600');
+        input.classList.remove('border-emerald-600');
+        if (msg) {
+          msg.classList.remove('hidden');
+          msg.className = 'text-[9px] text-red-400 mt-1 font-mono';
+          msg.textContent = `⚠ Нужно еще ${6 - len} симв. (минимум 6)`;
+        }
+      } else {
+        counter.className = 'text-[9px] text-emerald-400 font-mono font-bold';
+        input.classList.add('border-emerald-600');
+        input.classList.remove('border-red-600');
+        if (msg) {
+          msg.classList.remove('hidden');
+          msg.className = 'text-[9px] text-emerald-400 mt-1 font-mono';
+          msg.textContent = '✓ Пароль верной длины (≥ 6 символов)';
+        }
+      }
+    });
+  };
+
+  setupPassValidation('login-pass', 'login-pass-counter', 'login-pass-msg');
+  setupPassValidation('reg-pass', 'reg-pass-counter', 'reg-pass-msg');
+
   // Login form submit
   document.getElementById('form-login')?.addEventListener('submit', e => {
     e.preventDefault();
     const id = document.getElementById('login-identifier')?.value || '';
     const pass = document.getElementById('login-pass')?.value || '';
+    if (pass.trim().length < 6) {
+      toast(`ОШИБКА: Пароль должен быть от 6 символов! (введено: ${pass.trim().length})`);
+      document.getElementById('login-pass')?.focus();
+      return;
+    }
     const res = S.login(id, pass);
     if (res.ok) {
       modalAuth?.classList.add('hidden');
@@ -991,6 +1043,11 @@ function setupAuthModals() {
     const em = document.getElementById('reg-email')?.value || '';
     const p = document.getElementById('reg-pass')?.value || '';
     const code = document.getElementById('reg-admin-code')?.value || '';
+    if (p.trim().length < 6) {
+      toast(`ОШИБКА: Пароль должен быть от 6 символов! (введено: ${p.trim().length})`);
+      document.getElementById('reg-pass')?.focus();
+      return;
+    }
     const res = S.register(u, em, p, code);
     if (res.ok) {
       modalAuth?.classList.add('hidden');
