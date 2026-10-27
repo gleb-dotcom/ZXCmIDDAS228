@@ -31,7 +31,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="styles.css?v=666666" />
+  <link rel="stylesheet" href="styles.css?v=666667" />
 </head>
 <body class="bg-black text-zinc-100">
 
@@ -287,17 +287,14 @@
 
         <!-- Demo Accounts helper -->
         <div class="mt-5 pt-4 border-t border-zinc-900">
-          <span class="text-[9px] uppercase tracking-wider text-zinc-600 block mb-2">// БЫСТРЫЙ ДЕМО-ВХОД:</span>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-quick-admin" class="p-2 border border-red-950/70 hover:border-red-600 bg-red-950/20 text-red-300 hover:text-white text-[10px] text-left transition-colors">
-              <span class="font-bold block">● АДМИНИСТРАТОР</span>
-              <span class="text-[9px] text-zinc-500">логин: avice (пароль: 666666)</span>
-            </button>
-            <button type="button" id="btn-quick-customer" class="p-2 border border-zinc-800 hover:border-zinc-500 bg-zinc-950 text-zinc-300 hover:text-white text-[10px] text-left transition-colors">
-              <span class="font-bold block">● ПОКУПАТЕЛЬ</span>
+          <span class="text-[9px] uppercase tracking-wider text-zinc-600 block mb-2">// ТЕСТОВЫЙ ВХОД ДЛЯ ПОКУПАТЕЛЯ:</span>
+          <button type="button" id="btn-quick-customer" class="w-full p-2.5 border border-zinc-800 hover:border-zinc-500 bg-zinc-950 text-zinc-300 hover:text-white text-[10px] text-left transition-colors flex items-center justify-between">
+            <div>
+              <span class="font-bold block text-zinc-200">● ТЕСТОВЫЙ ПОКУПАТЕЛЬ</span>
               <span class="text-[9px] text-zinc-500">GOTH_ANGEL (пароль: 123456)</span>
-            </button>
-          </div>
+            </div>
+            <span class="text-[9px] text-zinc-500 font-mono">[ ВОЙТИ → ]</span>
+          </button>
         </div>
       </div>
 
@@ -323,7 +320,7 @@
           </div>
           <div class="border border-zinc-900 bg-zinc-950/70 p-2.5">
             <label class="block text-[10px] uppercase text-zinc-300 mb-1">Инвайт-код Администратора (необязательно):</label>
-            <input type="password" id="reg-admin-code" placeholder="Введите '666666' для прав админа" class="input-v text-xs py-1.5" />
+            <input type="password" id="reg-admin-code" placeholder="Секретный код доступа (только для персонала)" class="input-v text-xs py-1.5" />
             <span class="text-[9px] text-zinc-500 block mt-1">Оставьте пустым для создания обычного профиля покупателя.</span>
           </div>
           <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-xs tracking-widest mt-2">
@@ -495,7 +492,7 @@
   <div id="toast-container" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- Scripts -->
-  <script src="rain.js?v=666666"></script>
-  <script src="app.js?v=666666"></script>
+  <script src="rain.js?v=666667"></script>
+  <script src="app.js?v=666667"></script>
 </body>
 </html>
