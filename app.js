@@ -1384,7 +1384,7 @@ function setupCheckoutForm(modal) {
         <div class="inline-flex items-center justify-center w-14 h-14 border border-white text-white mb-4 animate-pulse">
           <i data-lucide="check" class="w-7 h-7"></i>
         </div>
-        <h3 class="text-base uppercase text-white font-bold tracking-widest">// ЗАКАЗ ПРИНЯТ В zxcMIDDAS</h3>
+        <h3 class="text-base uppercase text-white font-bold tracking-widest">// ЗАКАЗ ПРИНЯТ В аня <3</h3>
         <p class="text-[11px] text-zinc-400 mt-2">НОМЕР: <span class="text-white font-bold">${orderId}</span></p>
         <p class="text-[11px] text-zinc-500 mt-3 max-w-xs mx-auto leading-relaxed">
           Мы свяжемся по <span class="text-zinc-300">${contact}</span> для подтверждения. Заказ сохранен в истории вашего профиля.
