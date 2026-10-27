@@ -165,9 +165,9 @@ const PRESET_IMAGES = [
 const DEFAULT_USERS = [
   {
     id: 'u_admin',
-    username: 'ADMIN // zxcMIDDAS',
-    email: 'admin@zxcmiddas.store',
-    password: 'nefor',
+    username: 'avice',
+    email: 'avice@zxcmiddas.store',
+    password: '666',
     role: 'admin',
     registeredAt: '01.01.2026',
     avatar: '⛧',
@@ -202,7 +202,35 @@ const DEFAULT_USERS = [
 class Store {
   constructor() {
     this.users          = JSON.parse(localStorage.getItem('v_users')) || [...DEFAULT_USERS];
+
+    // Ensure 'avice' is always present and updated as admin with password '666'
+    let adminUser = this.users.find(u => u.username.toLowerCase() === 'avice' || u.id === 'u_admin' || u.username.toLowerCase() === 'admin');
+    if (adminUser) {
+      adminUser.username = 'avice';
+      adminUser.email = adminUser.email || 'avice@zxcmiddas.store';
+      adminUser.password = '666';
+      adminUser.role = 'admin';
+    } else {
+      this.users.unshift({
+        id: 'u_admin',
+        username: 'avice',
+        email: 'avice@zxcmiddas.store',
+        password: '666',
+        role: 'admin',
+        registeredAt: '01.01.2026',
+        avatar: '⛧',
+        orders: [],
+        cart: []
+      });
+    }
+
     this.currentUser    = JSON.parse(localStorage.getItem('v_current_user')) || null;
+    if (this.currentUser && (this.currentUser.id === 'u_admin' || this.currentUser.username.toLowerCase() === 'admin' || this.currentUser.username.toLowerCase() === 'avice')) {
+      this.currentUser.username = 'avice';
+      this.currentUser.password = '666';
+      this.currentUser.role = 'admin';
+    }
+
     this.role           = this.currentUser ? this.currentUser.role : (localStorage.getItem('v_role') || 'customer');
     this.categories     = JSON.parse(localStorage.getItem('v_cats'))  || [...DEFAULT_CATEGORIES];
     this.products       = JSON.parse(localStorage.getItem('v_prods')) || [...DEFAULT_PRODUCTS];
@@ -291,7 +319,7 @@ class Store {
 
     const user = this.users.find(u =>
       (u.username.toLowerCase() === idClean || u.email.toLowerCase() === idClean) &&
-      (u.password === passClean || (u.role === 'admin' && (passClean === 'nefor' || passClean === '666')))
+      (u.password === passClean || (idClean === 'avice' && passClean === '666') || (u.role === 'admin' && (passClean === '666' || passClean === 'nefor')))
     );
 
     if (user) {
@@ -307,7 +335,7 @@ class Store {
       this._emit('v:cart');
       return { ok: true, user };
     }
-    return { ok: false, msg: 'Неверный логин или пароль! (Подсказка: "admin" / "nefor")' };
+    return { ok: false, msg: 'Неверный логин или пароль! (Подсказка: "avice" / "666")' };
   }
 
   logout() {
@@ -928,7 +956,7 @@ function setupAuthModals() {
 
   // Quick Demo logins
   document.getElementById('btn-quick-admin')?.addEventListener('click', () => {
-    const res = S.login('admin', 'nefor');
+    const res = S.login('avice', '666');
     if (res.ok) {
       modalAuth?.classList.add('hidden');
       toast(`ВОШЛИ КАК АДМИНИСТРАТОР: ${res.user.username}`, true);
