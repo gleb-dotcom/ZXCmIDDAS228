@@ -31,7 +31,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=666666" />
 </head>
 <body class="bg-black text-zinc-100">
 
@@ -273,8 +273,12 @@
             <input type="text" id="login-identifier" required placeholder="GOTH_ANGEL или angel@void.cult" class="input-v text-xs py-2" />
           </div>
           <div>
-            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Пароль (от 6 символов):</label>
-            <input type="password" id="login-pass" required minlength="6" placeholder="Минимум 6 символов" class="input-v text-xs py-2" />
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[10px] uppercase text-zinc-400">Пароль (от 6 символов):</label>
+              <span id="login-pass-counter" class="text-[9px] text-zinc-500 font-mono">[ 0 / 6+ ]</span>
+            </div>
+            <input type="password" id="login-pass" required minlength="6" placeholder="Минимум 6 символов" class="input-v text-xs py-2 transition-colors" />
+            <div id="login-pass-msg" class="text-[9px] text-zinc-500 mt-1 font-mono hidden"></div>
           </div>
           <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-xs tracking-widest mt-2">
             ВОЙТИ В ПУСТОТУ
@@ -310,8 +314,12 @@
             <input type="email" id="reg-email" required placeholder="you@domain.com" class="input-v text-xs py-2" />
           </div>
           <div>
-            <label class="block text-[10px] uppercase text-zinc-400 mb-1">Придумайте пароль (от 6 символов):</label>
-            <input type="password" id="reg-pass" required minlength="6" placeholder="Минимум 6 символов" class="input-v text-xs py-2" />
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[10px] uppercase text-zinc-400">Придумайте пароль (от 6 символов):</label>
+              <span id="reg-pass-counter" class="text-[9px] text-zinc-500 font-mono">[ 0 / 6+ ]</span>
+            </div>
+            <input type="password" id="reg-pass" required minlength="6" placeholder="Минимум 6 символов" class="input-v text-xs py-2 transition-colors" />
+            <div id="reg-pass-msg" class="text-[9px] text-zinc-500 mt-1 font-mono hidden"></div>
           </div>
           <div class="border border-zinc-900 bg-zinc-950/70 p-2.5">
             <label class="block text-[10px] uppercase text-zinc-300 mb-1">Инвайт-код Администратора (необязательно):</label>
@@ -487,7 +495,7 @@
   <div id="toast-container" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- Scripts -->
-  <script src="rain.js"></script>
-  <script src="app.js"></script>
+  <script src="rain.js?v=666666"></script>
+  <script src="app.js?v=666666"></script>
 </body>
 </html>
