@@ -31,7 +31,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="styles.css?v=666667" />
+  <link rel="stylesheet" href="styles.css?v=666668" />
 </head>
 <body class="bg-black text-zinc-100">
 
@@ -270,7 +270,7 @@
         <form id="form-login" class="space-y-3">
           <div>
             <label class="block text-[10px] uppercase text-zinc-400 mb-1">Логин или Email:</label>
-            <input type="text" id="login-identifier" required placeholder="GOTH_ANGEL или angel@void.cult" class="input-v text-xs py-2" />
+            <input type="text" id="login-identifier" required placeholder="Введите ваш логин или email" class="input-v text-xs py-2" />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
@@ -281,30 +281,18 @@
             <div id="login-pass-msg" class="text-[9px] text-zinc-500 mt-1 font-mono hidden"></div>
           </div>
           <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-xs tracking-widest mt-2">
-            ВОЙТИ В ПУСТОТУ
+            ВОЙТИ
           </button>
         </form>
-
-        <!-- Demo Accounts helper -->
-        <div class="mt-5 pt-4 border-t border-zinc-900">
-          <span class="text-[9px] uppercase tracking-wider text-zinc-600 block mb-2">// ТЕСТОВЫЙ ВХОД ДЛЯ ПОКУПАТЕЛЯ:</span>
-          <button type="button" id="btn-quick-customer" class="w-full p-2.5 border border-zinc-800 hover:border-zinc-500 bg-zinc-950 text-zinc-300 hover:text-white text-[10px] text-left transition-colors flex items-center justify-between">
-            <div>
-              <span class="font-bold block text-zinc-200">● ТЕСТОВЫЙ ПОКУПАТЕЛЬ</span>
-              <span class="text-[9px] text-zinc-500">GOTH_ANGEL (пароль: 123456)</span>
-            </div>
-            <span class="text-[9px] text-zinc-500 font-mono">[ ВОЙТИ → ]</span>
-          </button>
-        </div>
       </div>
 
       <!-- Register Form View -->
       <div id="auth-register-view" class="hidden">
-        <h3 class="text-xs uppercase text-zinc-400 mb-4">// СОЗДАНИЕ НОВОГО АККАУНТА</h3>
+        <h3 class="text-xs uppercase text-zinc-400 mb-4">// СОЗДАНИЕ АККАУНТА</h3>
         <form id="form-register" class="space-y-3">
           <div>
             <label class="block text-[10px] uppercase text-zinc-400 mb-1">Псевдоним / Никнейм:</label>
-            <input type="text" id="reg-username" required placeholder="Например: OPIUM_LORD" class="input-v text-xs py-2" />
+            <input type="text" id="reg-username" required placeholder="Придумайте никнейм" class="input-v text-xs py-2" />
           </div>
           <div>
             <label class="block text-[10px] uppercase text-zinc-400 mb-1">Электронная почта (Email):</label>
@@ -317,11 +305,6 @@
             </div>
             <input type="password" id="reg-pass" required minlength="6" placeholder="Минимум 6 символов" class="input-v text-xs py-2 transition-colors" />
             <div id="reg-pass-msg" class="text-[9px] text-zinc-500 mt-1 font-mono hidden"></div>
-          </div>
-          <div class="border border-zinc-900 bg-zinc-950/70 p-2.5">
-            <label class="block text-[10px] uppercase text-zinc-300 mb-1">Инвайт-код Администратора (необязательно):</label>
-            <input type="password" id="reg-admin-code" placeholder="Секретный код доступа (только для персонала)" class="input-v text-xs py-1.5" />
-            <span class="text-[9px] text-zinc-500 block mt-1">Оставьте пустым для создания обычного профиля покупателя.</span>
           </div>
           <button type="submit" class="btn-v btn-v-solid w-full py-2.5 text-xs tracking-widest mt-2">
             ЗАРЕГИСТРИРОВАТЬСЯ
@@ -492,7 +475,7 @@
   <div id="toast-container" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- Scripts -->
-  <script src="rain.js?v=666667"></script>
-  <script src="app.js?v=666667"></script>
+  <script src="rain.js?v=666668"></script>
+  <script src="app.js?v=666668"></script>
 </body>
 </html>
